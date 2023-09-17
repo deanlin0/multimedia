@@ -1,6 +1,7 @@
 package hls
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
 )
@@ -12,6 +13,7 @@ const (
 
 type ID3Header struct {
 	Version string
+	TagSize int
 }
 
 type AudioContext struct {
@@ -24,13 +26,23 @@ func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
 	if err != nil {
 		return err
 	}
-
-	if n == id3HeaderSize && string(buf[0:3]) == id3Magic {
-		version := fmt.Sprintf("2.%d.%d", buf[3], buf[4])
-		audioContext.ID3Header = ID3Header{
-			Version: version,
-		}
+	if n != id3HeaderSize {
+		return nil
 	}
+
+	// ID3 Magic
+	if string(buf[0:3]) != id3Magic {
+		return nil
+	}
+
+	// ID3 version
+	version := fmt.Sprintf("2.%d.%d", buf[3], buf[4])
+	audioContext.ID3Header = ID3Header{
+		Version: version,
+	}
+
+	// Tag size
+	audioContext.ID3Header.TagSize = int(binary.BigEndian.Uint32(buf[6:10]))
 
 	return nil
 }

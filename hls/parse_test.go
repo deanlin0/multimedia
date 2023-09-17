@@ -12,7 +12,10 @@ func TestParseAudio_parseID3Header(t *testing.T) {
 	}
 
 	want := AudioContext{
-		ID3Header: ID3Header{Version: "2.4.0"},
+		ID3Header: ID3Header{
+			Version: "2.4.0",
+			TagSize: 85,
+		},
 	}
 	got := AudioContext{}
 
@@ -21,5 +24,8 @@ func TestParseAudio_parseID3Header(t *testing.T) {
 	}
 	if got.ID3Header.Version != want.ID3Header.Version {
 		t.Errorf("ID3 version is incorrect.\ngot: %s\nwant: %s\n", got.ID3Header.Version, want.ID3Header.Version)
+	}
+	if got.ID3Header.TagSize != want.ID3Header.TagSize {
+		t.Errorf("ID3 tag size is incorrect.\ngot: %d\nwant: %d\n", got.ID3Header.TagSize, want.ID3Header.TagSize)
 	}
 }
