@@ -15,7 +15,7 @@ type ID3Header struct {
 }
 
 type AudioContext struct {
-	ID3Header *ID3Header
+	ID3Header ID3Header
 }
 
 func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
@@ -27,7 +27,7 @@ func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
 
 	if n == id3HeaderSize && string(buf[0:3]) == id3Magic {
 		version := fmt.Sprintf("2.%d.%d", buf[3], buf[4])
-		audioContext.ID3Header = &ID3Header{
+		audioContext.ID3Header = ID3Header{
 			Version: version,
 		}
 	}
