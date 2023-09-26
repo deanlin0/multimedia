@@ -7,17 +7,77 @@ import (
 )
 
 const (
-	id3Magic      = "ID3"
-	id3HeaderSize = 10
+	id3Magic             = "ID3"
+	id3HeaderSize        = 10
+	id3FrameIDSize       = 4
+	id3FrameSizeSize     = 4
+	id3FrameFlagSize     = 2
+	id3FrameTextInfoType = 'T'
+)
+
+const (
+	textInfoEncodingSize    = 1
+	textInfoUserDefinedType = "TXXX"
+	textInfoTerminated      = '\x00'
+	textInfoUTF8Encoding    = '\x03'
 )
 
 type ID3Header struct {
-	Version string
-	TagSize int
+	Version        string
+	TagSize        int
+	TextInfoFrames []TextInfoFrame
+}
+
+type TextInfoFrame struct {
+	ID          string
+	Size        int
+	Encoding    byte
+	Description string
+	Value       string
 }
 
 type AudioContext struct {
 	ID3Header ID3Header
+}
+
+func parseTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
+	m2 := m1
+
+	for data[m2] != textInfoTerminated {
+		m2 += 1
+	}
+
+	var s string
+	switch encoding {
+	case textInfoUTF8Encoding:
+		s = string(data[m1:m2])
+	}
+	m2 += 1
+
+	return s, m2
+}
+
+func parseTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
+	var frame TextInfoFrame
+
+	m2 := m1
+	frame.ID = string(data[m2 : m2+4])
+	m2 += 4
+	frame.Size = int(binary.BigEndian.Uint32(data[m2 : m2+id3FrameSizeSize]))
+	m2 += id3FrameSizeSize
+	// TODO: frame.Flag = ...
+	m2 += id3FrameFlagSize
+	frame.Encoding = data[m2]
+	m2 += textInfoEncodingSize
+
+	if frame.ID == textInfoUserDefinedType {
+		frame.Description, m2 = parseTextInfoValue(data, m2, frame.Encoding)
+		frame.Value, m2 = parseTextInfoValue(data, m2, frame.Encoding)
+	} else {
+		frame.Value, m2 = parseTextInfoValue(data, m2, frame.Encoding)
+	}
+
+	return frame, m2
 }
 
 func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
@@ -41,8 +101,28 @@ func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
 		Version: version,
 	}
 
-	// Tag size
+	// Tag
 	audioContext.ID3Header.TagSize = int(binary.BigEndian.Uint32(buf[6:10]))
+
+	buf = make([]byte, audioContext.ID3Header.TagSize)
+	n, err = audio.Read(buf)
+	if err != nil {
+		return err
+	}
+	if n != audioContext.ID3Header.TagSize {
+		return nil
+	}
+
+	// Tag Frames
+	m1 := 0
+	for m1 < audioContext.ID3Header.TagSize-id3HeaderSize {
+		switch buf[m1] {
+		case id3FrameTextInfoType:
+			frame, m2 := parseTextInfoFrame(buf, m1)
+			audioContext.ID3Header.TextInfoFrames = append(audioContext.ID3Header.TextInfoFrames, frame)
+			m1 = m2
+		}
+	}
 
 	return nil
 }
