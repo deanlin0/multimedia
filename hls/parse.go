@@ -56,7 +56,7 @@ type AudioContext struct {
 	ID3Tag ID3Tag
 }
 
-func parseTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
+func readTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
 	m2 := m1
 
 	for data[m2] != textInfoTerminated {
@@ -73,7 +73,7 @@ func parseTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
 	return s, m2
 }
 
-func parseTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
+func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	var frame TextInfoFrame
 
 	m2 := m1
@@ -101,10 +101,10 @@ func parseTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	m2 += textInfoEncodingSize
 
 	if frame.ID == textInfoUserDefinedType {
-		frame.Description, m2 = parseTextInfoValue(data, m2, frame.Encoding)
-		frame.Value, m2 = parseTextInfoValue(data, m2, frame.Encoding)
+		frame.Description, m2 = readTextInfoValue(data, m2, frame.Encoding)
+		frame.Value, m2 = readTextInfoValue(data, m2, frame.Encoding)
 	} else {
-		frame.Value, m2 = parseTextInfoValue(data, m2, frame.Encoding)
+		frame.Value, m2 = readTextInfoValue(data, m2, frame.Encoding)
 	}
 
 	return frame, m2
@@ -148,7 +148,7 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 	for m1 < audioContext.ID3Tag.Size-id3HeaderSize {
 		switch buf[m1] {
 		case id3FrameTextInfoType:
-			frame, m2 := parseTextInfoFrame(buf, m1)
+			frame, m2 := readTextInfoFrame(buf, m1)
 			audioContext.ID3Tag.TextInfoFrames = append(audioContext.ID3Tag.TextInfoFrames, frame)
 			m1 = m2
 		}
@@ -157,12 +157,10 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 	return nil
 }
 
-func ParseAudio(audio io.Reader) (*AudioContext, error) {
-	var audioContext AudioContext
-
-	if err := parseID3Tag(audio, &audioContext); err != nil {
-		return nil, err
+func ParseAudio(audio io.Reader, audioContext *AudioContext) error {
+	if err := parseID3Tag(audio, audioContext); err != nil {
+		return err
 	}
 
-	return &audioContext, nil
+	return nil
 }
