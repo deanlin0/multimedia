@@ -77,8 +77,8 @@ func parseTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	var frame TextInfoFrame
 
 	m2 := m1
-	frame.ID = string(data[m2 : m2+4])
-	m2 += 4
+	frame.ID = string(data[m2 : m2+id3FrameIDSize])
+	m2 += id3FrameIDSize
 	frame.Size = int(binary.BigEndian.Uint32(data[m2 : m2+id3FrameSizeSize]))
 	m2 += id3FrameSizeSize
 
