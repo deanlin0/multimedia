@@ -13,9 +13,9 @@ func TestParseAudio_parseID3Header(t *testing.T) {
 	}
 
 	want := AudioContext{
-		ID3Header: ID3Header{
+		ID3Tag: ID3Tag{
 			Version: "2.4.0",
-			TagSize: 85,
+			Size:    85,
 			TextInfoFrames: []TextInfoFrame{
 				{
 					"TDRC", 12, textInfoUTF8Encoding, "", "2022-11-16",
@@ -37,16 +37,16 @@ func TestParseAudio_parseID3Header(t *testing.T) {
 	}
 	got := AudioContext{}
 
-	if err := parseID3Header(f, &got); err != nil {
+	if err := parseID3Tag(f, &got); err != nil {
 		t.Errorf("Failed to parse audio. err: %s\n", err.Error())
 	}
-	if got.ID3Header.Version != want.ID3Header.Version {
-		t.Errorf("ID3 version is incorrect.\ngot: %s\nwant: %s\n", got.ID3Header.Version, want.ID3Header.Version)
+	if got.ID3Tag.Version != want.ID3Tag.Version {
+		t.Errorf("ID3 version is incorrect.\ngot: %s\nwant: %s\n", got.ID3Tag.Version, want.ID3Tag.Version)
 	}
-	if got.ID3Header.TagSize != want.ID3Header.TagSize {
-		t.Errorf("ID3 tag size is incorrect.\ngot: %d\nwant: %d\n", got.ID3Header.TagSize, want.ID3Header.TagSize)
+	if got.ID3Tag.Size != want.ID3Tag.Size {
+		t.Errorf("ID3 tag size is incorrect.\ngot: %d\nwant: %d\n", got.ID3Tag.Size, want.ID3Tag.Size)
 	}
-	if !reflect.DeepEqual(got.ID3Header.TextInfoFrames, want.ID3Header.TextInfoFrames) {
-		t.Errorf("ID3 text info frames are incorrect.\ngot: %#v\nwant: %#v\n", got.ID3Header.TextInfoFrames, want.ID3Header.TextInfoFrames)
+	if !reflect.DeepEqual(got.ID3Tag.TextInfoFrames, want.ID3Tag.TextInfoFrames) {
+		t.Errorf("ID3 text info frames are incorrect.\ngot: %#v\nwant: %#v\n", got.ID3Tag.TextInfoFrames, want.ID3Tag.TextInfoFrames)
 	}
 }

@@ -22,9 +22,9 @@ const (
 	textInfoUTF8Encoding    = '\x03'
 )
 
-type ID3Header struct {
+type ID3Tag struct {
 	Version        string
-	TagSize        int
+	Size           int
 	TextInfoFrames []TextInfoFrame
 }
 
@@ -53,7 +53,7 @@ type TextInfoFrame struct {
 }
 
 type AudioContext struct {
-	ID3Header ID3Header
+	ID3Tag ID3Tag
 }
 
 func parseTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
@@ -110,7 +110,7 @@ func parseTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	return frame, m2
 }
 
-func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
+func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 	buf := make([]byte, id3HeaderSize)
 	n, err := audio.Read(buf)
 	if err != nil {
@@ -127,29 +127,29 @@ func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
 
 	// ID3 version
 	version := fmt.Sprintf("2.%d.%d", buf[3], buf[4])
-	audioContext.ID3Header = ID3Header{
+	audioContext.ID3Tag = ID3Tag{
 		Version: version,
 	}
 
 	// Tag
-	audioContext.ID3Header.TagSize = int(binary.BigEndian.Uint32(buf[6:10]))
+	audioContext.ID3Tag.Size = int(binary.BigEndian.Uint32(buf[6:10]))
 
-	buf = make([]byte, audioContext.ID3Header.TagSize)
+	buf = make([]byte, audioContext.ID3Tag.Size)
 	n, err = audio.Read(buf)
 	if err != nil {
 		return err
 	}
-	if n != audioContext.ID3Header.TagSize {
+	if n != audioContext.ID3Tag.Size {
 		return nil
 	}
 
 	// Tag Frames
 	m1 := 0
-	for m1 < audioContext.ID3Header.TagSize-id3HeaderSize {
+	for m1 < audioContext.ID3Tag.Size-id3HeaderSize {
 		switch buf[m1] {
 		case id3FrameTextInfoType:
 			frame, m2 := parseTextInfoFrame(buf, m1)
-			audioContext.ID3Header.TextInfoFrames = append(audioContext.ID3Header.TextInfoFrames, frame)
+			audioContext.ID3Tag.TextInfoFrames = append(audioContext.ID3Tag.TextInfoFrames, frame)
 			m1 = m2
 		}
 	}
@@ -160,7 +160,7 @@ func parseID3Header(audio io.Reader, audioContext *AudioContext) error {
 func ParseAudio(audio io.Reader) (*AudioContext, error) {
 	var audioContext AudioContext
 
-	if err := parseID3Header(audio, &audioContext); err != nil {
+	if err := parseID3Tag(audio, &audioContext); err != nil {
 		return nil, err
 	}
 
