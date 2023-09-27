@@ -11,7 +11,7 @@ const (
 	id3HeaderSize        = 10
 	id3FrameIDSize       = 4
 	id3FrameSizeSize     = 4
-	id3FrameFlagSize     = 2
+	id3FrameFlagSize     = 1
 	id3FrameTextInfoType = 'T'
 )
 
@@ -28,12 +28,28 @@ type ID3Header struct {
 	TextInfoFrames []TextInfoFrame
 }
 
+type FrameStatusFlag struct {
+	TagAlterPreserved  bool
+	FileAlterPreserved bool
+	ReadOnly           bool
+}
+
+type FrameFormatFlag struct {
+	Grouped             bool
+	Compressed          bool
+	Encrypted           bool
+	Unsynchronized      bool
+	DataLengthIndicated bool
+}
+
 type TextInfoFrame struct {
 	ID          string
 	Size        int
 	Encoding    byte
 	Description string
 	Value       string
+	StatusFlag  FrameStatusFlag
+	FormatFlag  FrameFormatFlag
 }
 
 type AudioContext struct {
@@ -65,8 +81,22 @@ func parseTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	m2 += 4
 	frame.Size = int(binary.BigEndian.Uint32(data[m2 : m2+id3FrameSizeSize]))
 	m2 += id3FrameSizeSize
-	// TODO: frame.Flag = ...
+
+	frame.StatusFlag = FrameStatusFlag{
+		TagAlterPreserved:  (data[m2] & 0x40) != 0x00,
+		FileAlterPreserved: (data[m2] & 0x20) != 0x00,
+		ReadOnly:           (data[m2] & 0x10) != 0x00,
+	}
 	m2 += id3FrameFlagSize
+	frame.FormatFlag = FrameFormatFlag{
+		Grouped:             (data[m2] & 0x40) != 0x00,
+		Compressed:          (data[m2] & 0x08) != 0x00,
+		Encrypted:           (data[m2] & 0x04) != 0x00,
+		Unsynchronized:      (data[m2] & 0x02) != 0x00,
+		DataLengthIndicated: (data[m2] & 0x01) != 0x00,
+	}
+	m2 += id3FrameFlagSize
+
 	frame.Encoding = data[m2]
 	m2 += textInfoEncodingSize
 

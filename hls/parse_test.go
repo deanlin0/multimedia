@@ -17,9 +17,21 @@ func TestParseAudio_parseID3Header(t *testing.T) {
 			Version: "2.4.0",
 			TagSize: 85,
 			TextInfoFrames: []TextInfoFrame{
-				{"TDRC", 12, textInfoUTF8Encoding, "", "2022-11-16"},
-				{"TXXX", 18, textInfoUTF8Encoding, "time_reference", "0"},
-				{"TSSE", 15, textInfoUTF8Encoding, "", "Lavf59.27.100"},
+				{
+					"TDRC", 12, textInfoUTF8Encoding, "", "2022-11-16",
+					FrameStatusFlag{false, false, false},
+					FrameFormatFlag{false, false, false, false, false},
+				},
+				{
+					"TXXX", 18, textInfoUTF8Encoding, "time_reference", "0",
+					FrameStatusFlag{false, false, false},
+					FrameFormatFlag{false, false, false, false, false},
+				},
+				{
+					"TSSE", 15, textInfoUTF8Encoding, "", "Lavf59.27.100",
+					FrameStatusFlag{false, false, false},
+					FrameFormatFlag{false, false, false, false, false},
+				},
 			},
 		},
 	}
