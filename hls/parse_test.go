@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestParseAudio_parseID3Header(t *testing.T) {
+func TestParseAudio_parseID3Tag(t *testing.T) {
 	f, err := os.Open("./testdata/ramp_jazz.mp3")
 	if err != nil {
 		t.Fatalf("Cannot open test audio file. err: %s\n", err.Error())
