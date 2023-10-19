@@ -137,6 +137,7 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 		int(buf[8])<<7 +
 		int(buf[9])
 
+	// Read tag frames
 	buf = make([]byte, audioContext.ID3Tag.Size)
 	n, err = audio.Read(buf)
 	if err != nil {
@@ -146,7 +147,7 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 		return nil
 	}
 
-	// Tag Frames
+	// Parse tag Frames
 	m1 := 0
 	for m1 < audioContext.ID3Tag.Size-id3HeaderSize {
 		switch buf[m1] {
@@ -159,6 +160,8 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 
 	return nil
 }
+
+func parseMP3
 
 func ParseAudio(audio io.Reader, audioContext *AudioContext) error {
 	if err := parseID3Tag(audio, audioContext); err != nil {
