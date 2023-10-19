@@ -131,8 +131,11 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 		Version: version,
 	}
 
-	// Tag
-	audioContext.ID3Tag.Size = int(binary.BigEndian.Uint32(buf[6:10]))
+	// Tag size
+	audioContext.ID3Tag.Size = int(buf[6])<<21 +
+		int(buf[7])<<14 +
+		int(buf[8])<<7 +
+		int(buf[9])
 
 	buf = make([]byte, audioContext.ID3Tag.Size)
 	n, err = audio.Read(buf)
