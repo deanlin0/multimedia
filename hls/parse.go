@@ -27,6 +27,13 @@ type ID3Tag struct {
 	TextInfoFrames []TextInfoFrame
 }
 
+type FrameHeader struct {
+	ID         string
+	Size       int
+	StatusFlag FrameStatusFlag
+	FormatFlag FrameFormatFlag
+}
+
 type FrameStatusFlag struct {
 	TagAlterPreserved  bool
 	FileAlterPreserved bool
@@ -42,13 +49,10 @@ type FrameFormatFlag struct {
 }
 
 type TextInfoFrame struct {
-	ID          string
-	Size        int
+	Header      FrameHeader
 	Encoding    byte
 	Description string
 	Value       string
-	StatusFlag  FrameStatusFlag
-	FormatFlag  FrameFormatFlag
 }
 
 type AudioContext struct {
@@ -72,25 +76,25 @@ func readTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
 	return s, m2
 }
 
-func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
-	var frame TextInfoFrame
+func readFrameHeader(data []byte, m1 int) (FrameHeader, int) {
+	var header FrameHeader
 
 	m2 := m1
-	frame.ID = string(data[m2 : m2+id3FrameIDSize])
+	header.ID = string(data[m2 : m2+id3FrameIDSize])
 	m2 += id3FrameIDSize
-	frame.Size = int(data[m2])<<21 +
+	header.Size = int(data[m2])<<21 +
 		int(data[m2+1])<<14 +
 		int(data[m2+2])<<7 +
 		int(data[m2+3])
 	m2 += id3FrameSizeSize
 
-	frame.StatusFlag = FrameStatusFlag{
+	header.StatusFlag = FrameStatusFlag{
 		TagAlterPreserved:  (data[m2] & 0x40) != 0x00,
 		FileAlterPreserved: (data[m2] & 0x20) != 0x00,
 		ReadOnly:           (data[m2] & 0x10) != 0x00,
 	}
 	m2 += id3FrameFlagSize
-	frame.FormatFlag = FrameFormatFlag{
+	header.FormatFlag = FrameFormatFlag{
 		Grouped:             (data[m2] & 0x40) != 0x00,
 		Compressed:          (data[m2] & 0x08) != 0x00,
 		Encrypted:           (data[m2] & 0x04) != 0x00,
@@ -99,10 +103,19 @@ func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	}
 	m2 += id3FrameFlagSize
 
+	return header, m2
+}
+
+func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
+	var frame TextInfoFrame
+
+	header, m2 := readFrameHeader(data, m1)
+	frame.Header = header
+
 	frame.Encoding = data[m2]
 	m2 += textInfoEncodingSize
 
-	if frame.ID == textInfoUserDefinedType {
+	if frame.Header.ID == textInfoUserDefinedType {
 		frame.Description, m2 = readTextInfoValue(data, m2, frame.Encoding)
 		frame.Value, m2 = readTextInfoValue(data, m2, frame.Encoding)
 	} else {
@@ -157,6 +170,9 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 			frame, m2 := readTextInfoFrame(buf, m1)
 			audioContext.ID3Tag.TextInfoFrames = append(audioContext.ID3Tag.TextInfoFrames, frame)
 			m1 = m2
+		default:
+			header, m2 := readFrameHeader(buf, m1)
+			m1 = m2 + header.Size
 		}
 	}
 
