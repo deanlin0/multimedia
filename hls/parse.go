@@ -17,8 +17,8 @@ const (
 const (
 	textInfoEncodingSize    = 1
 	textInfoUserDefinedType = "TXXX"
-	textInfoTerminated      = '\x00'
-	textInfoUTF8Encoding    = '\x03'
+	textInfoTerminated      = 0x00
+	textInfoUTF8Encoding    = 0x03
 )
 
 type ID3Tag struct {
