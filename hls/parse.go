@@ -1,7 +1,6 @@
 package hls
 
 import (
-	"encoding/binary"
 	"fmt"
 	"io"
 )
@@ -79,7 +78,10 @@ func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	m2 := m1
 	frame.ID = string(data[m2 : m2+id3FrameIDSize])
 	m2 += id3FrameIDSize
-	frame.Size = int(binary.BigEndian.Uint32(data[m2 : m2+id3FrameSizeSize]))
+	frame.Size = int(data[m2])<<21 +
+		int(data[m2+1])<<14 +
+		int(data[m2+2])<<7 +
+		int(data[m2+3])
 	m2 += id3FrameSizeSize
 
 	frame.StatusFlag = FrameStatusFlag{
@@ -160,8 +162,6 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 
 	return nil
 }
-
-func parseMP3
 
 func ParseAudio(audio io.Reader, audioContext *AudioContext) error {
 	if err := parseID3Tag(audio, audioContext); err != nil {
