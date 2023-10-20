@@ -1,8 +1,10 @@
 package hls
 
 import (
+	"encoding/binary"
 	"fmt"
 	"io"
+	"unicode/utf16"
 )
 
 const (
@@ -15,10 +17,17 @@ const (
 )
 
 const (
-	textInfoEncodingSize    = 1
-	textInfoUserDefinedType = "TXXX"
-	textInfoTerminated      = 0x00
-	textInfoUTF8Encoding    = 0x03
+	textInfoEncodingSize       = 1
+	textInfoUserDefinedType    = "TXXX"
+	textInfoUTF8Terminated     = 0x00
+	textInfoUTF16BOMTerminated = 0x00
+	textInfoUTF8Encoding       = 0x03
+	textInfoUTF16BOMEncoding   = 0x01
+	textInfoISO88591           = 0x00
+)
+
+const (
+	utf16BOM = 0xFEFF
 )
 
 type ID3Tag struct {
@@ -59,19 +68,61 @@ type AudioContext struct {
 	ID3Tag ID3Tag
 }
 
-func readTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
+func readTextInfoUTF8Value(data []byte, m1 int) (string, int) {
 	m2 := m1
 
-	for data[m2] != textInfoTerminated {
+	for data[m2] != textInfoUTF8Terminated {
 		m2 += 1
 	}
 
-	var s string
-	switch encoding {
-	case textInfoUTF8Encoding:
-		s = string(data[m1:m2])
-	}
+	s := string(data[m1:m2])
 	m2 += 1
+
+	return s, m2
+}
+
+func readTextInfoUTF16BOMValue(data []byte, m1 int) (string, int) {
+	m2 := m1
+
+	var isBigEndian bool
+	if binary.BigEndian.Uint16(data[m2:m2+2]) == utf16BOM {
+		isBigEndian = true
+	}
+	m2 += 2
+
+	var chars []uint16
+	if isBigEndian {
+		char := binary.BigEndian.Uint16(data[m2 : m2+2])
+		for char != textInfoUTF16BOMTerminated {
+			chars = append(chars, char)
+			m2 += 2
+			char = binary.BigEndian.Uint16(data[m2 : m2+2])
+		}
+	} else {
+		char := binary.LittleEndian.Uint16(data[m2 : m2+2])
+		for char != textInfoUTF16BOMTerminated {
+			chars = append(chars, char)
+			m2 += 2
+			char = binary.LittleEndian.Uint16(data[m2 : m2+2])
+		}
+	}
+
+	s := string(utf16.Decode(chars))
+	m2 += 2
+
+	return s, m2
+}
+
+func readTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
+	s := ""
+	m2 := m1
+
+	switch encoding {
+	case textInfoUTF8Encoding, textInfoISO88591:
+		s, m2 = readTextInfoUTF8Value(data, m1)
+	case textInfoUTF16BOMEncoding:
+		s, m2 = readTextInfoUTF16BOMValue(data, m1)
+	}
 
 	return s, m2
 }
@@ -162,7 +213,7 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 		return nil
 	}
 
-	// Parse tag Frames
+	// Parse tag frames
 	m1 := 0
 	for m1 < audioContext.ID3Tag.Size-id3HeaderSize {
 		switch buf[m1] {
