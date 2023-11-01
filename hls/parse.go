@@ -131,8 +131,10 @@ func readFrameHeader(data []byte, m1 int) (FrameHeader, int) {
 	var header FrameHeader
 
 	m2 := m1
+
 	header.ID = string(data[m2 : m2+id3FrameIDSize])
 	m2 += id3FrameIDSize
+
 	header.Size = int(data[m2])<<21 +
 		int(data[m2+1])<<14 +
 		int(data[m2+2])<<7 +
@@ -145,6 +147,7 @@ func readFrameHeader(data []byte, m1 int) (FrameHeader, int) {
 		ReadOnly:           (data[m2] & 0x10) != 0x00,
 	}
 	m2 += id3FrameFlagSize
+
 	header.FormatFlag = FrameFormatFlag{
 		Grouped:             (data[m2] & 0x40) != 0x00,
 		Compressed:          (data[m2] & 0x08) != 0x00,
