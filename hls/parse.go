@@ -104,7 +104,7 @@ type AudioContext struct {
 	ID3Tag ID3Tag
 }
 
-func readTextInfoUTF8Value(data []byte, m1 int) (string, int) {
+func readID3TextInfoUTF8Value(data []byte, m1 int) (string, int) {
 	m2 := m1
 
 	for data[m2] != textInfoUTF8Terminated {
@@ -117,7 +117,7 @@ func readTextInfoUTF8Value(data []byte, m1 int) (string, int) {
 	return s, m2
 }
 
-func readTextInfoUTF16BOMValue(data []byte, m1 int) (string, int) {
+func readID3TextInfoUTF16BOMValue(data []byte, m1 int) (string, int) {
 	m2 := m1
 
 	var isBigEndian bool
@@ -149,15 +149,15 @@ func readTextInfoUTF16BOMValue(data []byte, m1 int) (string, int) {
 	return s, m2
 }
 
-func readTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
+func readID3TextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
 	s := ""
 	m2 := m1
 
 	switch encoding {
 	case textInfoUTF8Encoding, textInfoISO88591:
-		s, m2 = readTextInfoUTF8Value(data, m1)
+		s, m2 = readID3TextInfoUTF8Value(data, m1)
 	case textInfoUTF16BOMEncoding:
-		s, m2 = readTextInfoUTF16BOMValue(data, m1)
+		s, m2 = readID3TextInfoUTF16BOMValue(data, m1)
 	}
 
 	return s, m2
@@ -206,10 +206,10 @@ func readID3TextInfoFrame(data []byte, m1 int) (ID3TextInfoFrame, int) {
 	m2 += textInfoEncodingSize
 
 	if frame.Header.ID == textInfoUserDefinedType {
-		frame.Description, m2 = readTextInfoValue(data, m2, frame.Encoding)
-		frame.Value, m2 = readTextInfoValue(data, m2, frame.Encoding)
+		frame.Description, m2 = readID3TextInfoValue(data, m2, frame.Encoding)
+		frame.Value, m2 = readID3TextInfoValue(data, m2, frame.Encoding)
 	} else {
-		frame.Value, m2 = readTextInfoValue(data, m2, frame.Encoding)
+		frame.Value, m2 = readID3TextInfoValue(data, m2, frame.Encoding)
 	}
 
 	return frame, m2
@@ -274,64 +274,45 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 	return header, m2
 }
 
-func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
-	buf := make([]byte, id3HeaderSize)
-	n, err := audio.Read(buf)
-	if err != nil {
-		return err
-	}
-	if n != id3HeaderSize {
-		return nil
-	}
+func readID3Tag(data []byte, m1 int) (ID3Tag, int) {
+	var tag ID3Tag
+	m2 := m1
 
 	// ID3 Magic
-	if string(buf[0:3]) != id3Magic {
-		return nil
+	if string(data[m2:m2+3]) != id3Magic {
+		return ID3Tag{}, -1
 	}
 
 	// ID3 version
-	version := fmt.Sprintf("2.%d.%d", buf[3], buf[4])
-	audioContext.ID3Tag = ID3Tag{
-		Version: version,
-	}
+	tag.Version = fmt.Sprintf("2.%d.%d", data[m2+3], data[m2+4])
 
 	// Tag size
-	audioContext.ID3Tag.Size = int(buf[6])<<21 +
-		int(buf[7])<<14 +
-		int(buf[8])<<7 +
-		int(buf[9])
+	tag.Size = int(data[m2+6])<<21 +
+		int(data[m2+7])<<14 +
+		int(data[m2+8])<<7 +
+		int(data[m2+9])
+	if tag.Size > len(data)-id3HeaderSize {
+		return ID3Tag{}, -1
+	}
 
 	// Read tag frames
-	buf = make([]byte, audioContext.ID3Tag.Size)
-	n, err = audio.Read(buf)
-	if err != nil {
-		return err
-	}
-	if n != audioContext.ID3Tag.Size {
-		return nil
-	}
-
-	// Parse tag frames
-	m1 := 0
-	for m1 < audioContext.ID3Tag.Size-id3HeaderSize {
-		switch buf[m1] {
+	m2 += id3HeaderSize
+	m3 := m2
+	for m3-m2 < tag.Size {
+		switch data[m3] {
 		case id3FrameTextInfoType:
-			frame, m2 := readID3TextInfoFrame(buf, m1)
-			audioContext.ID3Tag.TextInfoFrames = append(audioContext.ID3Tag.TextInfoFrames, frame)
-			m1 = m2
+			frame, _m3 := readID3TextInfoFrame(data, m3)
+			tag.TextInfoFrames = append(tag.TextInfoFrames, frame)
+			m3 = _m3
 		default:
-			header, m2 := readID3FrameHeader(buf, m1)
-			m1 = m2 + header.Size
+			header, _m3 := readID3FrameHeader(data, m3)
+			m3 = _m3 + header.Size
 		}
 	}
 
-	return nil
+	return tag, m3
 }
 
 func ParseAudio(audio io.Reader, audioContext *AudioContext) error {
-	if err := parseID3Tag(audio, audioContext); err != nil {
-		return err
-	}
-
 	return nil
 }
