@@ -59,23 +59,23 @@ const (
 type ID3Tag struct {
 	Version        string
 	Size           int
-	TextInfoFrames []TextInfoFrame
+	TextInfoFrames []ID3TextInfoFrame
 }
 
-type FrameHeader struct {
+type ID3FrameHeader struct {
 	ID         string
 	Size       int
-	StatusFlag FrameStatusFlag
-	FormatFlag FrameFormatFlag
+	StatusFlag ID3FrameStatusFlag
+	FormatFlag ID3FrameFormatFlag
 }
 
-type FrameStatusFlag struct {
+type ID3FrameStatusFlag struct {
 	TagAlterPreserved  bool
 	FileAlterPreserved bool
 	ReadOnly           bool
 }
 
-type FrameFormatFlag struct {
+type ID3FrameFormatFlag struct {
 	Grouped             bool
 	Compressed          bool
 	Encrypted           bool
@@ -83,8 +83,8 @@ type FrameFormatFlag struct {
 	DataLengthIndicated bool
 }
 
-type TextInfoFrame struct {
-	Header      FrameHeader
+type ID3TextInfoFrame struct {
+	Header      ID3FrameHeader
 	Encoding    byte
 	Description string
 	Value       string
@@ -163,8 +163,8 @@ func readTextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
 	return s, m2
 }
 
-func readFrameHeader(data []byte, m1 int) (FrameHeader, int) {
-	var header FrameHeader
+func readID3FrameHeader(data []byte, m1 int) (ID3FrameHeader, int) {
+	var header ID3FrameHeader
 
 	m2 := m1
 
@@ -177,14 +177,14 @@ func readFrameHeader(data []byte, m1 int) (FrameHeader, int) {
 		int(data[m2+3])
 	m2 += id3FrameSizeSize
 
-	header.StatusFlag = FrameStatusFlag{
+	header.StatusFlag = ID3FrameStatusFlag{
 		TagAlterPreserved:  (data[m2] & 0x40) != 0x00,
 		FileAlterPreserved: (data[m2] & 0x20) != 0x00,
 		ReadOnly:           (data[m2] & 0x10) != 0x00,
 	}
 	m2 += id3FrameFlagSize
 
-	header.FormatFlag = FrameFormatFlag{
+	header.FormatFlag = ID3FrameFormatFlag{
 		Grouped:             (data[m2] & 0x40) != 0x00,
 		Compressed:          (data[m2] & 0x08) != 0x00,
 		Encrypted:           (data[m2] & 0x04) != 0x00,
@@ -196,10 +196,10 @@ func readFrameHeader(data []byte, m1 int) (FrameHeader, int) {
 	return header, m2
 }
 
-func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
-	var frame TextInfoFrame
+func readID3TextInfoFrame(data []byte, m1 int) (ID3TextInfoFrame, int) {
+	var frame ID3TextInfoFrame
 
-	header, m2 := readFrameHeader(data, m1)
+	header, m2 := readID3FrameHeader(data, m1)
 	frame.Header = header
 
 	frame.Encoding = data[m2]
@@ -316,11 +316,11 @@ func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
 	for m1 < audioContext.ID3Tag.Size-id3HeaderSize {
 		switch buf[m1] {
 		case id3FrameTextInfoType:
-			frame, m2 := readTextInfoFrame(buf, m1)
+			frame, m2 := readID3TextInfoFrame(buf, m1)
 			audioContext.ID3Tag.TextInfoFrames = append(audioContext.ID3Tag.TextInfoFrames, frame)
 			m1 = m2
 		default:
-			header, m2 := readFrameHeader(buf, m1)
+			header, m2 := readID3FrameHeader(buf, m1)
 			m1 = m2 + header.Size
 		}
 	}

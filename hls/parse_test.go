@@ -17,21 +17,21 @@ func TestParseAudio_parseID3Tag(t *testing.T) {
 				ID3Tag: ID3Tag{
 					Version: "2.4.0",
 					Size:    85,
-					TextInfoFrames: []TextInfoFrame{
+					TextInfoFrames: []ID3TextInfoFrame{
 						{
-							Header:      FrameHeader{"TDRC", 12, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TDRC", 12, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF8Encoding,
 							Description: "",
 							Value:       "2022-11-16",
 						},
 						{
-							Header:      FrameHeader{"TXXX", 18, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TXXX", 18, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF8Encoding,
 							Description: "time_reference",
 							Value:       "0",
 						},
 						{
-							Header:      FrameHeader{"TSSE", 15, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TSSE", 15, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF8Encoding,
 							Description: "",
 							Value:       "Lavf59.27.100",
@@ -46,51 +46,51 @@ func TestParseAudio_parseID3Tag(t *testing.T) {
 				ID3Tag: ID3Tag{
 					Version: "2.3.0",
 					Size:    640733,
-					TextInfoFrames: []TextInfoFrame{
+					TextInfoFrames: []ID3TextInfoFrame{
 						{
-							Header:      FrameHeader{"TALB", 15, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TALB", 15, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF16BOMEncoding,
 							Description: "",
 							Value:       "DOVA用",
 						},
 						{
-							Header:      FrameHeader{"TPE1", 15, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TPE1", 15, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF16BOMEncoding,
 							Description: "",
 							Value:       "蒲鉾さちこ",
 						},
 						{
-							Header:      FrameHeader{"TPE2", 15, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TPE2", 15, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF16BOMEncoding,
 							Description: "",
 							Value:       "蒲鉾さちこ",
 						},
 						{
-							Header:      FrameHeader{"TCOM", 51, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TCOM", 51, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF16BOMEncoding,
 							Description: "",
 							Value:       "蒲鉾さちこ(Kamaboko Sachiko)",
 						},
 						{
-							Header:      FrameHeader{"TCON", 23, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TCON", 23, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF16BOMEncoding,
 							Description: "",
 							Value:       "Jazz+Funk",
 						},
 						{
-							Header:      FrameHeader{"TIT2", 43, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TIT2", 43, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoUTF16BOMEncoding,
 							Description: "",
 							Value:       "Funky weekend night",
 						},
 						{
-							Header:      FrameHeader{"TRCK", 3, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TRCK", 3, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoISO88591,
 							Description: "",
 							Value:       "1",
 						},
 						{
-							Header:      FrameHeader{"TYER", 6, FrameStatusFlag{false, false, false}, FrameFormatFlag{false, false, false, false, false}},
+							Header:      ID3FrameHeader{"TYER", 6, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
 							Encoding:    textInfoISO88591,
 							Description: "",
 							Value:       "2022",
