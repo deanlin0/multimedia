@@ -30,6 +30,32 @@ const (
 	utf16BOM = 0xFEFF
 )
 
+const (
+	mpegAudioPacketSize = 1024
+)
+
+const (
+	mpegAudioFrameSync              = 0xFFE
+	mpegAudioFrameHeaderSize        = 4
+	mpegAudioFrameSyncBitSize       = 11
+	mpegAudioFrameVersionBitSize    = 2
+	mpegAudioFrameLayerBitSize      = 2
+	mpegAudioFrameProtectionBitSize = 2
+)
+
+const (
+	mpegAudioVersion2_5Bits             = 0
+	mpegAudioVersionReservedBits        = 1
+	mpegAudioVersion2Bits               = 2
+	mpegAudioVersion1Bits               = 3
+	mpegAudioLayerReservedBits          = 0
+	mpegAudioLayer1Bits                 = 1
+	mpegAudioLayer2Bits                 = 2
+	mpegAudioLayer3Bits                 = 3
+	mpegAudioProtectionBitsProtected    = 0
+	mpegAudioProtectionBitsNotProtected = 1
+)
+
 type ID3Tag struct {
 	Version        string
 	Size           int
@@ -62,6 +88,16 @@ type TextInfoFrame struct {
 	Encoding    byte
 	Description string
 	Value       string
+}
+
+type MPEGAudioFrameHeader struct {
+	MPEGAudioVersion string
+	Layer            int
+	Protected        bool
+}
+
+type MPEGAudioFrame struct {
+	Header MPEGAudioFrameHeader
 }
 
 type AudioContext struct {
@@ -177,6 +213,65 @@ func readTextInfoFrame(data []byte, m1 int) (TextInfoFrame, int) {
 	}
 
 	return frame, m2
+}
+
+func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
+	var header MPEGAudioFrameHeader
+	m2 := m1
+
+	// Read the header by shifting offset
+	var bitOffset uint32 = mpegAudioFrameHeaderSize * 8
+	headerBits := binary.LittleEndian.Uint32(data[0:mpegAudioFrameHeaderSize])
+
+	// MP3 frame sync
+	bitOffset -= mpegAudioFrameSyncBitSize
+	mp3SyncBits := headerBits >> bitOffset & mpegAudioFrameSync
+	if mp3SyncBits != mpegAudioFrameSync {
+		return MPEGAudioFrameHeader{}, -1
+	}
+
+	// MPEG audio version
+	bitOffset -= mpegAudioFrameVersionBitSize
+	mpegAudioVersionBits := headerBits >> bitOffset
+	switch mpegAudioVersionBits {
+	case mpegAudioVersion2_5Bits:
+		header.MPEGAudioVersion = "2.5"
+	case mpegAudioVersionReservedBits:
+		return MPEGAudioFrameHeader{}, -1
+	case mpegAudioVersion2Bits:
+		header.MPEGAudioVersion = "2"
+	case mpegAudioVersion1Bits:
+		header.MPEGAudioVersion = "1"
+	}
+
+	// Layer
+	bitOffset -= mpegAudioFrameLayerBitSize
+	mpegAudioLayerBits := headerBits >> bitOffset
+	switch mpegAudioLayerBits {
+	case mpegAudioLayerReservedBits:
+		return MPEGAudioFrameHeader{}, -1
+	case mpegAudioLayer3Bits:
+		header.Layer = 3
+	case mpegAudioLayer2Bits:
+		header.Layer = 2
+
+	case mpegAudioLayer1Bits:
+		header.Layer = 1
+	}
+
+	// Protection bits
+	bitOffset -= mpegAudioFrameProtectionBitSize
+	mpegProtectionBits := headerBits >> bitOffset
+	switch mpegProtectionBits {
+	case mpegAudioProtectionBitsProtected:
+		header.Protected = true
+	case mpegAudioProtectionBitsNotProtected:
+		header.Protected = false
+	}
+
+	m2 += mpegAudioFrameHeaderSize
+
+	return header, m2
 }
 
 func parseID3Tag(audio io.Reader, audioContext *AudioContext) error {
