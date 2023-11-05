@@ -14,8 +14,10 @@ func TestParseAudio_readID3Tag(t *testing.T) {
 		{
 			filePath: "./testdata/ramp_jazz.mp3",
 			want: ID3Tag{
-				Version: "2.4.0",
-				Size:    85,
+				Header: ID3TagHeader{
+					Version: "2.4.0",
+					TagSize: 85,
+				},
 				TextInfoFrames: []ID3TextInfoFrame{
 					{
 						Header:      ID3FrameHeader{"TDRC", 12, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
@@ -41,8 +43,10 @@ func TestParseAudio_readID3Tag(t *testing.T) {
 		{
 			filePath: "./testdata/funky_weekend_night.mp3",
 			want: ID3Tag{
-				Version: "2.3.0",
-				Size:    640733,
+				Header: ID3TagHeader{
+					Version: "2.3.0",
+					TagSize: 640733,
+				},
 				TextInfoFrames: []ID3TextInfoFrame{
 					{
 						Header:      ID3FrameHeader{"TALB", 15, ID3FrameStatusFlag{false, false, false}, ID3FrameFormatFlag{false, false, false, false, false}},
@@ -103,7 +107,7 @@ func TestParseAudio_readID3Tag(t *testing.T) {
 			t.Fatalf("Cannot open test audio file. err: %s\n", err.Error())
 		}
 
-		data := make([]byte, id3HeaderSize+tc.want.Size)
+		data := make([]byte, id3HeaderSize+tc.want.Header.TagSize)
 		if _, err := f.Read(data); err != nil {
 			t.Fatalf("Cannot read test audio file. err: %s\n", err.Error())
 		}
@@ -111,11 +115,11 @@ func TestParseAudio_readID3Tag(t *testing.T) {
 		got, _ := readID3Tag(data, 0)
 		want := tc.want
 
-		if got.Version != want.Version {
-			t.Errorf("ID3 version is incorrect.\ngot: %s\nwant: %s\n", got.Version, want.Version)
+		if got.Header.Version != want.Header.Version {
+			t.Errorf("ID3 version is incorrect.\ngot: %s\nwant: %s\n", got.Header.Version, want.Header.Version)
 		}
-		if got.Size != want.Size {
-			t.Errorf("ID3 tag size is incorrect.\ngot: %d\nwant: %d\n", got.Size, want.Size)
+		if got.Header.TagSize != want.Header.TagSize {
+			t.Errorf("ID3 tag size is incorrect.\ngot: %d\nwant: %d\n", got.Header.TagSize, want.Header.TagSize)
 		}
 		if !reflect.DeepEqual(got.TextInfoFrames, want.TextInfoFrames) {
 			t.Errorf("ID3 text info frames are incorrect.\ngot: %#v\nwant: %#v\n", got.TextInfoFrames, want.TextInfoFrames)

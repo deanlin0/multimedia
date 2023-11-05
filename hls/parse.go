@@ -57,9 +57,13 @@ const (
 )
 
 type ID3Tag struct {
-	Version        string
-	Size           int
+	Header         ID3TagHeader
 	TextInfoFrames []ID3TextInfoFrame
+}
+
+type ID3TagHeader struct {
+	Version string
+	TagSize int
 }
 
 type ID3FrameHeader struct {
@@ -274,31 +278,45 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 	return header, m2
 }
 
-func readID3Tag(data []byte, m1 int) (ID3Tag, int) {
-	var tag ID3Tag
+func readID3TagHeader(data []byte, m1 int) (ID3TagHeader, int) {
+	var header ID3TagHeader
 	m2 := m1
 
-	// ID3 Magic
+	// ID3 magic
 	if string(data[m2:m2+3]) != id3Magic {
-		return ID3Tag{}, -1
+		return ID3TagHeader{}, -1
 	}
 
 	// ID3 version
-	tag.Version = fmt.Sprintf("2.%d.%d", data[m2+3], data[m2+4])
+	header.Version = fmt.Sprintf("2.%d.%d", data[m2+3], data[m2+4])
 
-	// Tag size
-	tag.Size = int(data[m2+6])<<21 +
+	// ID3 tag size
+	header.TagSize = int(data[m2+6])<<21 +
 		int(data[m2+7])<<14 +
 		int(data[m2+8])<<7 +
 		int(data[m2+9])
-	if tag.Size > len(data)-id3HeaderSize {
-		return ID3Tag{}, -1
+	if header.TagSize > len(data)-id3HeaderSize {
+		return ID3TagHeader{}, -1
 	}
 
-	// Read tag frames
 	m2 += id3HeaderSize
+
+	return header, m2
+}
+
+func readID3Tag(data []byte, m1 int) (ID3Tag, int) {
+	var tag ID3Tag
+
+	// Read tag header
+	header, m2 := readID3TagHeader(data, m1)
+	if m2 == -1 {
+		return ID3Tag{}, -1
+	}
+	tag.Header = header
+
+	// Read tag frames
 	m3 := m2
-	for m3-m2 < tag.Size {
+	for m3-m2 < tag.Header.TagSize {
 		switch data[m3] {
 		case id3FrameTextInfoType:
 			frame, _m3 := readID3TextInfoFrame(data, m3)
