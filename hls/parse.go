@@ -296,9 +296,6 @@ func readID3TagHeader(data []byte, m1 int) (ID3TagHeader, int) {
 		int(data[m2+7])<<14 +
 		int(data[m2+8])<<7 +
 		int(data[m2+9])
-	if header.TagSize > len(data)-id3HeaderSize {
-		return ID3TagHeader{}, -1
-	}
 
 	m2 += id3HeaderSize
 
@@ -313,11 +310,14 @@ func readID3Tag(data []byte, m1 int) (ID3Tag, int) {
 	if m2 == -1 {
 		return ID3Tag{}, -1
 	}
+	if id3HeaderSize+header.TagSize > len(data) {
+		return ID3Tag{}, -1
+	}
 	tag.Header = header
 
 	// Read tag frames
 	m3 := m2
-	for m3-m2 < tag.Header.TagSize {
+	for tag.Header.TagSize > m3-m2 {
 		switch data[m3] {
 		case id3FrameTextInfoType:
 			frame, _m3 := readID3TextInfoFrame(data, m3)
