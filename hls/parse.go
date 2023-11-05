@@ -109,19 +109,21 @@ type AudioContext struct {
 }
 
 func readID3TextInfoUTF8Value(data []byte, m1 int) (string, int) {
+	var textInfoValue string
 	m2 := m1
 
 	for data[m2] != textInfoUTF8Terminated {
 		m2 += 1
 	}
 
-	s := string(data[m1:m2])
+	textInfoValue = string(data[m1:m2])
 	m2 += 1
 
-	return s, m2
+	return textInfoValue, m2
 }
 
 func readID3TextInfoUTF16BOMValue(data []byte, m1 int) (string, int) {
+	var textInfoValue string
 	m2 := m1
 
 	var isBigEndian bool
@@ -147,29 +149,28 @@ func readID3TextInfoUTF16BOMValue(data []byte, m1 int) (string, int) {
 		}
 	}
 
-	s := string(utf16.Decode(chars))
+	textInfoValue = string(utf16.Decode(chars))
 	m2 += 2
 
-	return s, m2
+	return textInfoValue, m2
 }
 
 func readID3TextInfoValue(data []byte, m1 int, encoding byte) (string, int) {
-	s := ""
+	var textInfoValue string
 	m2 := m1
 
 	switch encoding {
 	case textInfoUTF8Encoding, textInfoISO88591:
-		s, m2 = readID3TextInfoUTF8Value(data, m1)
+		textInfoValue, m2 = readID3TextInfoUTF8Value(data, m1)
 	case textInfoUTF16BOMEncoding:
-		s, m2 = readID3TextInfoUTF16BOMValue(data, m1)
+		textInfoValue, m2 = readID3TextInfoUTF16BOMValue(data, m1)
 	}
 
-	return s, m2
+	return textInfoValue, m2
 }
 
 func readID3FrameHeader(data []byte, m1 int) (ID3FrameHeader, int) {
 	var header ID3FrameHeader
-
 	m2 := m1
 
 	header.ID = string(data[m2 : m2+id3FrameIDSize])
