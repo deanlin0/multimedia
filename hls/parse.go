@@ -254,8 +254,8 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 
 	// MP3 frame sync
 	bitOffset -= mpegAudioFrameSyncBitSize
-	mp3SyncBits := headerBits >> bitOffset & mpegAudioFrameSync
-	if mp3SyncBits != mpegAudioFrameSync {
+	mpegAudioSyncBits := headerBits >> bitOffset & mpegAudioFrameSync
+	if mpegAudioSyncBits != mpegAudioFrameSync {
 		return MPEGAudioFrameHeader{}, -1
 	}
 
