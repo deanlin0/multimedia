@@ -250,18 +250,21 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 
 	// Read the header by shifting offset
 	var bitOffset uint32 = mpegAudioFrameHeaderSize * 8
+	var bitMask uint32
 	headerBits := binary.LittleEndian.Uint32(data[0:mpegAudioFrameHeaderSize])
 
 	// MP3 frame sync
 	bitOffset -= mpegAudioFrameSyncBitSize
-	mpegAudioSyncBits := headerBits >> bitOffset & mpegAudioFrameSync
+	bitMask = 1<<mpegAudioFrameSyncBitSize - 1
+	mpegAudioSyncBits := (headerBits >> bitOffset) & bitMask
 	if mpegAudioSyncBits != mpegAudioFrameSync {
 		return MPEGAudioFrameHeader{}, -1
 	}
 
 	// MPEG audio version
 	bitOffset -= mpegAudioFrameVersionBitSize
-	mpegAudioVersionBits := headerBits >> bitOffset
+	bitMask = 1<<mpegAudioFrameVersionBitSize - 1
+	mpegAudioVersionBits := (headerBits >> bitOffset) & bitMask
 	switch mpegAudioVersionBits {
 	case mpegAudioVersion2_5Bits:
 		header.MPEGAudioVersion = "2.5"
@@ -275,7 +278,8 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 
 	// Layer
 	bitOffset -= mpegAudioFrameLayerBitSize
-	mpegAudioLayerBits := headerBits >> bitOffset
+	bitMask = 1<<mpegAudioFrameLayerBitSize - 1
+	mpegAudioLayerBits := (headerBits >> bitOffset) & bitMask
 	switch mpegAudioLayerBits {
 	case mpegAudioLayerReservedBits:
 		return MPEGAudioFrameHeader{}, -1
@@ -290,7 +294,8 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 
 	// Protection bit
 	bitOffset -= mpegAudioFrameProtectionBitSize
-	mpegProtectionBits := headerBits >> bitOffset
+	bitMask = 1<<mpegAudioFrameProtectionBitSize - 1
+	mpegProtectionBits := (headerBits >> bitOffset) & bitMask
 	switch mpegProtectionBits {
 	case mpegAudioProtectionBitsProtected:
 		header.Protected = true
@@ -300,7 +305,8 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 
 	// Bitrate
 	bitOffset -= mpegAudioFrameBitrateBitSize
-	mpegBitrateBits := headerBits >> bitOffset
+	bitMask = 1<<mpegAudioFrameBitrateBitSize - 1
+	mpegBitrateBits := (headerBits >> bitOffset) & bitMask
 	switch header.MPEGAudioVersion {
 	case "1":
 		header.Bitrate = mpegBitrateMap[0][header.Layer][mpegBitrateBits]
@@ -309,8 +315,9 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 	}
 
 	// Sample rate
-	bitOffset -= mpegAudioFrameBitrateBitSize
-	mpegSampleRateBits := headerBits >> bitOffset
+	bitOffset -= mpegAudioFrameSampleRateBitSize
+	bitMask = 1<<mpegAudioFrameSampleRateBitSize - 1
+	mpegSampleRateBits := (headerBits >> bitOffset) & bitMask
 	switch header.MPEGAudioVersion {
 	case "1":
 		header.SampleRate = mpegSampleRateMap[0][mpegSampleRateBits]
