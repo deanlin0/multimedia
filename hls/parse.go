@@ -41,6 +41,8 @@ const (
 	mpegAudioFrameVersionBitSize    = 2
 	mpegAudioFrameLayerBitSize      = 2
 	mpegAudioFrameProtectionBitSize = 2
+	mpegAudioFrameBitrateBitSize    = 4
+	mpegAudioFrameSampleRateBitSize = 2
 )
 
 const (
@@ -65,6 +67,7 @@ var (
 		},
 		{
 			{0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256},
+			{0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
 			{0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160},
 		},
 	}
@@ -117,6 +120,8 @@ type MPEGAudioFrameHeader struct {
 	MPEGAudioVersion string
 	Layer            int
 	Protected        bool
+	Bitrate          int
+	SampleRate       int
 }
 
 type MPEGAudioFrame struct {
@@ -283,7 +288,7 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 		header.Layer = 1
 	}
 
-	// Protection bits
+	// Protection bit
 	bitOffset -= mpegAudioFrameProtectionBitSize
 	mpegProtectionBits := headerBits >> bitOffset
 	switch mpegProtectionBits {
@@ -291,6 +296,28 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 		header.Protected = true
 	case mpegAudioProtectionBitsNotProtected:
 		header.Protected = false
+	}
+
+	// Bitrate
+	bitOffset -= mpegAudioFrameBitrateBitSize
+	mpegBitrateBits := headerBits >> bitOffset
+	switch header.MPEGAudioVersion {
+	case "1":
+		header.Bitrate = mpegBitrateMap[0][header.Layer][mpegBitrateBits]
+	case "2.5", "2":
+		header.Bitrate = mpegBitrateMap[1][header.Layer][mpegBitrateBits]
+	}
+
+	// Sample rate
+	bitOffset -= mpegAudioFrameBitrateBitSize
+	mpegSampleRateBits := headerBits >> bitOffset
+	switch header.MPEGAudioVersion {
+	case "1":
+		header.SampleRate = mpegSampleRateMap[0][mpegSampleRateBits]
+	case "2":
+		header.SampleRate = mpegSampleRateMap[1][mpegSampleRateBits]
+	case "2.5":
+		header.SampleRate = mpegSampleRateMap[2][mpegSampleRateBits]
 	}
 
 	m2 += mpegAudioFrameHeaderSize
