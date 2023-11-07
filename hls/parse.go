@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	mpegAudioFrameSync              = 0xFFE
+	mpegAudioFrameSync              = 0x7FF
 	mpegAudioFrameHeaderSize        = 4
 	mpegAudioFrameSyncBitSize       = 11
 	mpegAudioFrameVersionBitSize    = 2
