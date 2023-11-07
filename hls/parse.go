@@ -51,9 +51,9 @@ const (
 	mpegAudioVersion2Bits               = 2
 	mpegAudioVersion1Bits               = 3
 	mpegAudioLayerReservedBits          = 0
-	mpegAudioLayer1Bits                 = 1
+	mpegAudioLayer1Bits                 = 3
 	mpegAudioLayer2Bits                 = 2
-	mpegAudioLayer3Bits                 = 3
+	mpegAudioLayer3Bits                 = 1
 	mpegAudioProtectionBitsProtected    = 0
 	mpegAudioProtectionBitsNotProtected = 1
 )
@@ -308,9 +308,9 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 	mpegBitrateBits := (headerBits >> bitOffset) & bitMask
 	switch header.MPEGAudioVersion {
 	case "1":
-		header.Bitrate = mpegBitrateMap[0][header.Layer][mpegBitrateBits]
+		header.Bitrate = mpegBitrateMap[0][header.Layer-1][mpegBitrateBits]
 	case "2.5", "2":
-		header.Bitrate = mpegBitrateMap[1][header.Layer][mpegBitrateBits]
+		header.Bitrate = mpegBitrateMap[1][header.Layer-1][mpegBitrateBits]
 	}
 
 	// Sample rate
