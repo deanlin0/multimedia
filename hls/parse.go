@@ -251,7 +251,7 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 	// Read the header by shifting offset
 	var bitOffset uint32 = mpegAudioFrameHeaderSize * 8
 	var bitMask uint32
-	headerBits := binary.LittleEndian.Uint32(data[0:mpegAudioFrameHeaderSize])
+	headerBits := binary.BigEndian.Uint32(data[0:mpegAudioFrameHeaderSize])
 
 	// MP3 frame sync
 	bitOffset -= mpegAudioFrameSyncBitSize
@@ -287,7 +287,6 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 		header.Layer = 3
 	case mpegAudioLayer2Bits:
 		header.Layer = 2
-
 	case mpegAudioLayer1Bits:
 		header.Layer = 1
 	}
