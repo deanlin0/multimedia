@@ -126,3 +126,44 @@ func TestParseAudio_readID3Tag(t *testing.T) {
 		}
 	}
 }
+
+func TestParseAudio_readMPEGAudioFrameHeader(t *testing.T) {
+	f, err := os.Open("./testdata/ramp_jazz.mp3")
+	if err != nil {
+		t.Fatalf("Cannot open test audio file. err: %s\n", err.Error())
+	}
+
+	var firstFrameSyncOffset int64 = 1139
+	if _, err := f.Seek(firstFrameSyncOffset, 0); err != nil {
+		t.Fatalf("Cannot skip to the first frame sync. err: %s\n", err.Error())
+	}
+	data := make([]byte, 4)
+	if _, err := f.Read(data); err != nil {
+		t.Fatalf("Cannot read test audio file. err: %s\n", err.Error())
+	}
+
+	got, _ := readMPEGAudioFrameHeader(data, 0)
+	want := MPEGAudioFrameHeader{
+		MPEGAudioVersion: "1",
+		Layer:            3,
+		Protected:        false,
+		Bitrate:          320,
+		SampleRate:       44100,
+	}
+
+	if got.MPEGAudioVersion != want.MPEGAudioVersion {
+		t.Errorf("MPEG audio version is incorrect.\ngot: %s\nwant: %s\n", got.MPEGAudioVersion, want.MPEGAudioVersion)
+	}
+	if got.Layer != want.Layer {
+		t.Errorf("MPEG audio layer is incorrect.\ngot: %d\nwant: %d\n", got.Layer, want.Layer)
+	}
+	if got.Protected != want.Protected {
+		t.Errorf("MPEG audio CRC protection is incorrect.\ngot: %v\nwant: %v\n", got.Protected, want.Protected)
+	}
+	if got.Bitrate != want.Bitrate {
+		t.Errorf("MPEG audio bitrate is incorrect.\ngot: %d\nwant: %d\n", got.Bitrate, want.Bitrate)
+	}
+	if got.SampleRate != want.SampleRate {
+		t.Errorf("MPEG audio sample rate is incorrect.\ngot: %d\nwant: %d\n", got.SampleRate, want.SampleRate)
+	}
+}
