@@ -40,7 +40,7 @@ const (
 	mpegAudioFrameSyncBitSize       = 11
 	mpegAudioFrameVersionBitSize    = 2
 	mpegAudioFrameLayerBitSize      = 2
-	mpegAudioFrameProtectionBitSize = 2
+	mpegAudioFrameProtectionBitSize = 1
 	mpegAudioFrameBitrateBitSize    = 4
 	mpegAudioFrameSampleRateBitSize = 2
 )
