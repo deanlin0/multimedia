@@ -116,6 +116,14 @@ type ID3TextInfoFrame struct {
 	Value       string
 }
 
+type VBRHeader struct {
+	ID         string
+	NumOfFrame *int
+	FileSize   *int
+	TOC        []int
+	Quality    *int
+}
+
 type MPEGAudioFrameHeader struct {
 	MPEGAudioVersion string
 	Layer            int
