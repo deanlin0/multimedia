@@ -31,6 +31,16 @@ const (
 )
 
 const (
+	vbrXingMagic       = "Xing"
+	vbrInfoMagic       = "Info"
+	vbrFlagSize        = 4
+	vbrNumOfFramesSize = 4
+	vbrFileSizeSize    = 4
+	vbrTOCSize         = 100
+	vbrQualitySize     = 4
+)
+
+const (
 	mpegAudioPacketSize = 1024
 )
 
@@ -117,11 +127,11 @@ type ID3TextInfoFrame struct {
 }
 
 type VBRHeader struct {
-	ID         string
-	NumOfFrame *int
-	FileSize   *int
-	TOC        []int
-	Quality    *int
+	ID          string
+	NumOfFrames *int
+	FileSize    *int
+	TOC         []int
+	Quality     *int
 }
 
 type MPEGAudioFrameHeader struct {
@@ -335,6 +345,64 @@ func readMPEGAudioFrameHeader(data []byte, m1 int) (MPEGAudioFrameHeader, int) {
 	}
 
 	m2 += mpegAudioFrameHeaderSize
+
+	return header, m2
+}
+
+func readVBRTOC(data []byte, m1 int) ([]int, int) {
+	var toc []int
+	m2 := m1
+
+	if len(data) < m2+vbrTOCSize {
+		return nil, -1
+	}
+
+	for i := m2; i < m2+vbrTOCSize; i++ {
+		pos := int(data[i])
+		toc = append(toc, pos)
+	}
+	m2 += vbrTOCSize
+
+	return toc, m2
+}
+
+func readVBRHeader(data []byte, m1 int) (VBRHeader, int) {
+	var header VBRHeader
+	m2 := m1
+
+	// VBR ID
+	id := string(data[m2 : m2+4])
+	if id != vbrXingMagic && id != vbrInfoMagic {
+		return VBRHeader{}, -1
+	}
+	header.ID = id
+	m2 += 4
+
+	// VBR flags
+	flagBits := binary.BigEndian.Uint32(data[m2 : m2+4])
+	m2 += vbrFlagSize
+
+	// Read number of frames, file size, toc, and quality if the flag is set
+	if flagBits&0x01 == 0x01 {
+		numOfFrames := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
+		header.NumOfFrames = &numOfFrames
+		m2 += vbrNumOfFramesSize
+	}
+	if flagBits&0x02 == 0x02 {
+		fileSize := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
+		header.FileSize = &fileSize
+		m2 += vbrFileSizeSize
+	}
+	if flagBits&0x04 == 0x04 {
+		toc, _ := readVBRTOC(data, m2)
+		header.TOC = toc
+		m2 += vbrTOCSize
+	}
+	if flagBits&0x08 == 0x08 {
+		quality := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
+		header.Quality = &quality
+		m2 += vbrQualitySize
+	}
 
 	return header, m2
 }

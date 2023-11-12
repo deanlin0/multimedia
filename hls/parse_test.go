@@ -127,6 +127,64 @@ func TestParseAudio_readID3Tag(t *testing.T) {
 	}
 }
 
+func TestParseAudio_readVBRHeader(t *testing.T) {
+	f, err := os.Open("./testdata/ramp_jazz.mp3")
+	if err != nil {
+		t.Fatalf("Cannot open test audio file. err: %s\n", err.Error())
+	}
+
+	var vbrHeaderOffset int64 = 131
+	if _, err := f.Seek(vbrHeaderOffset, 0); err != nil {
+		t.Fatalf("Cannot skip to the first frame sync. err: %s\n", err.Error())
+	}
+	data := make([]byte, 120)
+	if _, err := f.Read(data); err != nil {
+		t.Fatalf("Cannot read test audio file. err: %s\n", err.Error())
+	}
+
+	got, _ := readVBRHeader(data, 0)
+	wantID := vbrInfoMagic
+	wantNumOfFrames, wantFileSize, wantQuality := 7572, 7913011, 0
+	wantTOC := []int{
+		0, 3, 5, 8, 10, 13, 16, 18, 20, 23,
+		25, 28, 31, 33, 36, 38, 41, 44, 46, 48,
+		51, 54, 56, 59, 61, 64, 67, 69, 72, 74,
+		76, 80, 82, 84, 87, 89, 91, 95, 97, 100,
+		102, 104, 108, 110, 112, 115, 117, 120, 123, 125,
+		128, 130, 133, 136, 138, 140, 143, 146, 148, 151,
+		153, 155, 159, 161, 164, 166, 168, 172, 174, 176,
+		179, 181, 183, 187, 189, 192, 194, 196, 200, 202,
+		204, 207, 209, 212, 215, 217, 219, 222, 225, 228,
+		230, 232, 235, 238, 240, 243, 245, 247, 250, 253,
+	}
+
+	if got.NumOfFrames == nil {
+		t.Fatalf("VBR number of frames is not read.\n")
+	}
+	if got.FileSize == nil {
+		t.Fatalf("VBR file size is not read.\n")
+	}
+	if got.Quality == nil {
+		t.Fatalf("VBR quality is not read.\n")
+	}
+
+	if got.ID != wantID {
+		t.Errorf("VBR ID is incorrect.\ngot: %s\nwant: %s\n", got.ID, wantID)
+	}
+	if *got.NumOfFrames != wantNumOfFrames {
+		t.Errorf("VBR number of frames is incorrect.\ngot: %v\nwant: %v\n", *got.NumOfFrames, wantNumOfFrames)
+	}
+	if *got.FileSize != wantFileSize {
+		t.Errorf("VBR file size is incorrect.\ngot: %v\nwant: %v\n", *got.FileSize, wantFileSize)
+	}
+	if !reflect.DeepEqual(got.TOC, wantTOC) {
+		t.Errorf("VBR TOC are incorrect.\ngot: %v\nwant: %v\n", got.TOC, wantTOC)
+	}
+	if *got.Quality != wantQuality {
+		t.Errorf("VBR quality is incorrect.\ngot: %v\nwant: %v\n", *got.Quality, wantQuality)
+	}
+}
+
 func TestParseAudio_readMPEGAudioFrameHeader(t *testing.T) {
 	f, err := os.Open("./testdata/ramp_jazz.mp3")
 	if err != nil {
