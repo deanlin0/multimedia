@@ -394,9 +394,9 @@ func readVBRHeader(data []byte, m1 int) (VBRHeader, int) {
 		m2 += vbrFileSizeSize
 	}
 	if flagBits&0x04 == 0x04 {
-		toc, _ := readVBRTOC(data, m2)
+		toc, _m2 := readVBRTOC(data, m2)
 		header.TOC = toc
-		m2 += vbrTOCSize
+		m2 = _m2
 	}
 	if flagBits&0x08 == 0x08 {
 		quality := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
