@@ -379,17 +379,17 @@ func readVBRHeader(data []byte, m1 int) (VBRHeader, int) {
 	m2 += 4
 
 	// VBR flags
-	flagBits := binary.BigEndian.Uint32(data[m2 : m2+4])
+	flagBits := binary.BigEndian.Uint32(data[m2 : m2+vbrFlagSize])
 	m2 += vbrFlagSize
 
 	// Read number of frames, file size, toc, and quality if the flag is set
 	if flagBits&0x01 == 0x01 {
-		numOfFrames := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
+		numOfFrames := int(binary.BigEndian.Uint32(data[m2 : m2+vbrNumOfFramesSize]))
 		header.NumOfFrames = &numOfFrames
 		m2 += vbrNumOfFramesSize
 	}
 	if flagBits&0x02 == 0x02 {
-		fileSize := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
+		fileSize := int(binary.BigEndian.Uint32(data[m2 : m2+vbrFileSizeSize]))
 		header.FileSize = &fileSize
 		m2 += vbrFileSizeSize
 	}
@@ -399,7 +399,7 @@ func readVBRHeader(data []byte, m1 int) (VBRHeader, int) {
 		m2 = _m2
 	}
 	if flagBits&0x08 == 0x08 {
-		quality := int(binary.BigEndian.Uint32(data[m2 : m2+4]))
+		quality := int(binary.BigEndian.Uint32(data[m2 : m2+vbrQualitySize]))
 		header.Quality = &quality
 		m2 += vbrQualitySize
 	}
