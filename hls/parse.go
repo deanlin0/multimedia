@@ -41,7 +41,8 @@ const (
 )
 
 const (
-	mpegAudioPacketSize = 1024
+	mpegAudioPacketSize        = 1024
+	mpegAudioLayer3FrameLength = 1052 // A MPEG Layer-3 frame contains 1052 samples
 )
 
 const (
