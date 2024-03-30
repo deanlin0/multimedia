@@ -47,14 +47,3 @@ func NewPlan(n int, in, out *Array, fftType FFTType, flag Flag) *Plan {
 func ExecutePlan(plan *Plan) {
 	C.fftw_execute(plan.cPlan)
 }
-
-func DCT32(samples []float64) []float64 {
-	output := make([]float64, 32)
-	_ = copy(output, samples)
-
-	in := NewArray(output)
-	plan := NewPlan(32, in, in, FFTWREDFT10, FFTWESTIMATE)
-	ExecutePlan(plan)
-
-	return output
-}
