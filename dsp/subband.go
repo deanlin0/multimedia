@@ -3,7 +3,7 @@ package dsp
 import (
 	"math"
 	"math/big"
-	"streaming/fftw"
+	"multimedia/fftw"
 )
 
 // 32-point DCT
