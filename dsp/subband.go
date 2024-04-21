@@ -2,33 +2,21 @@ package dsp
 
 import (
 	"math"
-	"math/big"
 	"multimedia/fftw"
 )
 
 // 32-point DCT
 func DCT32(samples []float64) []float64 {
 	var bins []float64
-	for j := 0; j < 32; j++ {
-		binWithPrec := big.NewFloat(0).SetPrec(100)
-		for k := 0; k < 32; k++ {
-			sample := samples[k]
-			phase := math.Pi * float64(j) * (float64(2*k) + 1) / 64
+	for k := 0; k < 32; k++ {
+		var bin float64
+		for n := 0; n < 32; n++ {
+			sample := samples[n]
+			phase := math.Pi * float64(k) * (float64(2*n) + 1) / 64
 			filter := math.Cos(phase)
-			binWithPrec.Add(
-				binWithPrec,
-				big.NewFloat(0).SetPrec(100).
-					Mul(
-						big.NewFloat(sample).SetPrec(100),
-						big.NewFloat(filter).SetPrec(100),
-					),
-			)
+			bin += sample * filter
 		}
-
-		bin, _ := binWithPrec.Mul(
-			binWithPrec,
-			big.NewFloat(2).SetPrec(100),
-		).Float64()
+		bin *= 2
 		bins = append(bins, bin)
 	}
 
