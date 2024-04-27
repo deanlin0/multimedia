@@ -25,11 +25,14 @@ func compareBySignficantDigits(t *testing.T, f1, f2 float64, precision int, sign
 		s2 = s2[1:]
 	}
 
-	for (s1[0] == '.' && s2[0] == '.') || (s1[0] == '0' && s2[0] == '0') {
+	for len(s1) > 0 && len(s2) > 0 && ((s1[0] == '.' && s2[0] == '.') || (s1[0] == '0' && s2[0] == '0')) {
 		s1 = s1[1:]
 		s2 = s2[1:]
 	}
 
+	if len(s1) == 0 && len(s2) == 0 {
+		return true
+	}
 	if len(s1) != len(s2) && (len(s1) < signficance || len(s2) < signficance) {
 		return false
 	}
