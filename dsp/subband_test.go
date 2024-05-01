@@ -6,18 +6,18 @@ import (
 	"testing"
 )
 
-func compareBySignficantDigits(t *testing.T, f1, f2 float64, precision int, signficance int) bool {
+func compareBySignficantDigits(t *testing.T, f1, f2 float64, signficance int) bool {
 	t.Helper()
 
-	F1 := big.NewFloat(f1).SetPrec(uint(precision))
-	F2 := big.NewFloat(f2).SetPrec(uint(precision))
+	F1 := big.NewFloat(f1)
+	F2 := big.NewFloat(f2)
 
 	if F1.Sign() != F2.Sign() {
 		return false
 	}
 
-	s1 := F1.Text('f', precision)
-	s2 := F2.Text('f', precision)
+	s1 := F1.Text('f', int(F1.Prec()))
+	s2 := F2.Text('f', int(F2.Prec()))
 
 	if s1[0] == '-' {
 		s1 = s1[1:]
@@ -131,7 +131,7 @@ func TestDCT32_Scipy(t *testing.T) {
 
 	for _, tc := range testCases {
 		for i := range tc.got {
-			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 50, 6) {
+			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
 				t.Logf(
 					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
@@ -222,7 +222,7 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 
 	for _, tc := range testCases {
 		for i := range tc.got {
-			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 50, 6) {
+			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
 				t.Logf(
 					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
@@ -313,7 +313,7 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 
 	for _, tc := range testCases {
 		for i := range tc.got {
-			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 50, 6) {
+			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
 				t.Logf(
 					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
