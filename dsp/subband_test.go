@@ -137,7 +137,7 @@ func TestDCT32_Scipy(t *testing.T) {
 					i, tc.got[i], tc.want[i],
 				)
 			}
-			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-08, 1e-05) {
+			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
 				t.Errorf(
 					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
@@ -228,7 +228,7 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 					i, tc.got[i], tc.want[i],
 				)
 			}
-			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-08, 1e-05) {
+			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
 				t.Errorf(
 					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
@@ -319,7 +319,7 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 					i, tc.got[i], tc.want[i],
 				)
 			}
-			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-08, 1e-05) {
+			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
 				t.Errorf(
 					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
