@@ -56,14 +56,14 @@ func compareByTolerance(t *testing.T, f1, f2 float64, absolute float64, relative
 }
 
 // Compare with the output of `scipy.fft.dct`
-func TestDCT32_Scipy(t *testing.T) {
+func TestDCT32(t *testing.T) {
 	testCases := []struct {
 		name string
 		got  []float64
 		want []float64
 	}{
 		{
-			name: "square",
+			name: "scipy-square",
 			got: DCT32([]float64{
 				1.0, -1.0, 1.0, -1.0,
 				1.0, -1.0, 1.0, -1.0,
@@ -86,7 +86,7 @@ func TestDCT32_Scipy(t *testing.T) {
 			},
 		},
 		{
-			name: "sine",
+			name: "scipy-sine",
 			got: DCT32([]float64{
 				0.00000000e+00, 1.95090322e-01, 3.82683432e-01, 5.55570233e-01,
 				7.07106781e-01, 8.31469612e-01, 9.23879533e-01, 9.80785280e-01,
@@ -109,7 +109,7 @@ func TestDCT32_Scipy(t *testing.T) {
 			},
 		},
 		{
-			name: "random",
+			name: "scipy-random",
 			got: DCT32([]float64{
 				0.08172875100082977, 0.36953386373875685, -0.806351593557876, -0.05568409786067585,
 				0.7702243803320863, -0.6166200502845958, 0.2782717690638761, -0.20591899369053013,
@@ -153,14 +153,14 @@ func TestDCT32_Scipy(t *testing.T) {
 	}
 }
 
-func TestDCT32ByDFT_Scipy(t *testing.T) {
+func TestDCT32ByDFT(t *testing.T) {
 	testCases := []struct {
 		name string
 		got  []float64
 		want []float64
 	}{
 		{
-			name: "square",
+			name: "scipy-square",
 			got: DCT32ByDFT([]float64{
 				1.0, -1.0, 1.0, -1.0,
 				1.0, -1.0, 1.0, -1.0,
@@ -183,7 +183,7 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 			},
 		},
 		{
-			name: "sine",
+			name: "scipy-sine",
 			got: DCT32ByDFT([]float64{
 				0.00000000e+00, 1.95090322e-01, 3.82683432e-01, 5.55570233e-01,
 				7.07106781e-01, 8.31469612e-01, 9.23879533e-01, 9.80785280e-01,
@@ -206,7 +206,7 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 			},
 		},
 		{
-			name: "random",
+			name: "scipy-random",
 			got: DCT32ByDFT([]float64{
 				0.08172875100082977, 0.36953386373875685, -0.806351593557876, -0.05568409786067585,
 				0.7702243803320863, -0.6166200502845958, 0.2782717690638761, -0.20591899369053013,
@@ -250,14 +250,14 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 	}
 }
 
-func TestDCT32ByFFTW_Scipy(t *testing.T) {
+func TestDCT32ByFFTW(t *testing.T) {
 	testCases := []struct {
 		name string
 		got  []float64
 		want []float64
 	}{
 		{
-			name: "square",
+			name: "scipy-square",
 			got: DCT32ByFFTW([]float64{
 				1.0, -1.0, 1.0, -1.0,
 				1.0, -1.0, 1.0, -1.0,
@@ -280,7 +280,7 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 			},
 		},
 		{
-			name: "sine",
+			name: "scipy-sine",
 			got: DCT32ByFFTW([]float64{
 				0.00000000e+00, 1.95090322e-01, 3.82683432e-01, 5.55570233e-01,
 				7.07106781e-01, 8.31469612e-01, 9.23879533e-01, 9.80785280e-01,
@@ -303,7 +303,7 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 			},
 		},
 		{
-			name: "random",
+			name: "scipy-random",
 			got: DCT32ByFFTW([]float64{
 				0.08172875100082977, 0.36953386373875685, -0.806351593557876, -0.05568409786067585,
 				0.7702243803320863, -0.6166200502845958, 0.2782717690638761, -0.20591899369053013,
