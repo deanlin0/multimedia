@@ -58,10 +58,12 @@ func compareByTolerance(t *testing.T, f1, f2 float64, absolute float64, relative
 // Compare with the output of `scipy.fft.dct`
 func TestDCT32_Scipy(t *testing.T) {
 	testCases := []struct {
+		name string
 		got  []float64
 		want []float64
 	}{
 		{
+			name: "square",
 			got: DCT32([]float64{
 				1.0, -1.0, 1.0, -1.0,
 				1.0, -1.0, 1.0, -1.0,
@@ -84,6 +86,7 @@ func TestDCT32_Scipy(t *testing.T) {
 			},
 		},
 		{
+			name: "sine",
 			got: DCT32([]float64{
 				0.00000000e+00, 1.95090322e-01, 3.82683432e-01, 5.55570233e-01,
 				7.07106781e-01, 8.31469612e-01, 9.23879533e-01, 9.80785280e-01,
@@ -106,6 +109,7 @@ func TestDCT32_Scipy(t *testing.T) {
 			},
 		},
 		{
+			name: "random",
 			got: DCT32([]float64{
 				0.08172875100082977, 0.36953386373875685, -0.806351593557876, -0.05568409786067585,
 				0.7702243803320863, -0.6166200502845958, 0.2782717690638761, -0.20591899369053013,
@@ -130,29 +134,33 @@ func TestDCT32_Scipy(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		for i := range tc.got {
-			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
-				t.Logf(
-					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
-					i, tc.got[i], tc.want[i],
-				)
+		t.Run(tc.name, func(t *testing.T) {
+			for i := range tc.got {
+				if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
+					t.Logf(
+						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, tc.got[i], tc.want[i],
+					)
+				}
+				if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
+					t.Errorf(
+						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, tc.got[i], tc.want[i],
+					)
+				}
 			}
-			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
-				t.Errorf(
-					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
-					i, tc.got[i], tc.want[i],
-				)
-			}
-		}
+		})
 	}
 }
 
 func TestDCT32ByDFT_Scipy(t *testing.T) {
 	testCases := []struct {
+		name string
 		got  []float64
 		want []float64
 	}{
 		{
+			name: "square",
 			got: DCT32ByDFT([]float64{
 				1.0, -1.0, 1.0, -1.0,
 				1.0, -1.0, 1.0, -1.0,
@@ -175,6 +183,7 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 			},
 		},
 		{
+			name: "sine",
 			got: DCT32ByDFT([]float64{
 				0.00000000e+00, 1.95090322e-01, 3.82683432e-01, 5.55570233e-01,
 				7.07106781e-01, 8.31469612e-01, 9.23879533e-01, 9.80785280e-01,
@@ -197,6 +206,7 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 			},
 		},
 		{
+			name: "random",
 			got: DCT32ByDFT([]float64{
 				0.08172875100082977, 0.36953386373875685, -0.806351593557876, -0.05568409786067585,
 				0.7702243803320863, -0.6166200502845958, 0.2782717690638761, -0.20591899369053013,
@@ -221,29 +231,33 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		for i := range tc.got {
-			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
-				t.Logf(
-					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
-					i, tc.got[i], tc.want[i],
-				)
+		t.Run(tc.name, func(t *testing.T) {
+			for i := range tc.got {
+				if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
+					t.Logf(
+						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, tc.got[i], tc.want[i],
+					)
+				}
+				if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
+					t.Errorf(
+						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, tc.got[i], tc.want[i],
+					)
+				}
 			}
-			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
-				t.Errorf(
-					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
-					i, tc.got[i], tc.want[i],
-				)
-			}
-		}
+		})
 	}
 }
 
 func TestDCT32ByFFTW_Scipy(t *testing.T) {
 	testCases := []struct {
+		name string
 		got  []float64
 		want []float64
 	}{
 		{
+			name: "square",
 			got: DCT32ByFFTW([]float64{
 				1.0, -1.0, 1.0, -1.0,
 				1.0, -1.0, 1.0, -1.0,
@@ -266,6 +280,7 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 			},
 		},
 		{
+			name: "sine",
 			got: DCT32ByFFTW([]float64{
 				0.00000000e+00, 1.95090322e-01, 3.82683432e-01, 5.55570233e-01,
 				7.07106781e-01, 8.31469612e-01, 9.23879533e-01, 9.80785280e-01,
@@ -288,6 +303,7 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 			},
 		},
 		{
+			name: "random",
 			got: DCT32ByFFTW([]float64{
 				0.08172875100082977, 0.36953386373875685, -0.806351593557876, -0.05568409786067585,
 				0.7702243803320863, -0.6166200502845958, 0.2782717690638761, -0.20591899369053013,
@@ -312,19 +328,21 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		for i := range tc.got {
-			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
-				t.Logf(
-					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
-					i, tc.got[i], tc.want[i],
-				)
+		t.Run(tc.name, func(t *testing.T) {
+			for i := range tc.got {
+				if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
+					t.Logf(
+						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, tc.got[i], tc.want[i],
+					)
+				}
+				if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
+					t.Errorf(
+						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, tc.got[i], tc.want[i],
+					)
+				}
 			}
-			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-12, 1e-08) {
-				t.Errorf(
-					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
-					i, tc.got[i], tc.want[i],
-				)
-			}
-		}
+		})
 	}
 }
