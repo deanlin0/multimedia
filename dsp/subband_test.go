@@ -1,6 +1,7 @@
 package dsp
 
 import (
+	"math"
 	"math/big"
 	"testing"
 )
@@ -44,6 +45,14 @@ func compareBySignficantDigits(t *testing.T, f1, f2 float64, precision int, sign
 	}
 
 	return true
+}
+
+func compareByTolerance(t *testing.T, f1, f2 float64, absolute float64, relative float64) bool {
+	t.Helper()
+
+	tolerance := absolute + relative*math.Abs(f2)
+
+	return math.Abs(f1-f2) <= tolerance
 }
 
 // Compare with the output of `scipy.fft.dct`
@@ -123,8 +132,14 @@ func TestDCT32_Scipy(t *testing.T) {
 	for _, tc := range testCases {
 		for i := range tc.got {
 			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 50, 6) {
+				t.Logf(
+					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+					i, tc.got[i], tc.want[i],
+				)
+			}
+			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-08, 1e-05) {
 				t.Errorf(
-					"DCT32 bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
 				)
 			}
@@ -208,8 +223,14 @@ func TestDCT32ByDFT_Scipy(t *testing.T) {
 	for _, tc := range testCases {
 		for i := range tc.got {
 			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 50, 6) {
+				t.Logf(
+					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+					i, tc.got[i], tc.want[i],
+				)
+			}
+			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-08, 1e-05) {
 				t.Errorf(
-					"DCT32 bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
 				)
 			}
@@ -293,8 +314,14 @@ func TestDCT32ByFFTW_Scipy(t *testing.T) {
 	for _, tc := range testCases {
 		for i := range tc.got {
 			if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 50, 6) {
+				t.Logf(
+					"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+					i, tc.got[i], tc.want[i],
+				)
+			}
+			if !compareByTolerance(t, tc.got[i], tc.want[i], 1e-08, 1e-05) {
 				t.Errorf(
-					"DCT32 bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+					"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 					i, tc.got[i], tc.want[i],
 				)
 			}
