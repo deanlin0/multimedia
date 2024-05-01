@@ -7,7 +7,7 @@ import (
 
 // 32-point DCT
 func DCT32(samples []float64) []float64 {
-	var bins []float64
+	bins := make([]float64, 32)
 	for k := 0; k < 32; k++ {
 		var bin float64
 		for n := 0; n < 32; n++ {
@@ -17,7 +17,7 @@ func DCT32(samples []float64) []float64 {
 			bin += sample * filter
 		}
 		bin *= 2
-		bins = append(bins, bin)
+		bins[k] = bin
 	}
 
 	return bins
