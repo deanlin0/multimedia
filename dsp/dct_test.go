@@ -1,8 +1,11 @@
 package dsp
 
 import (
+	"encoding/json"
+	"io"
 	"math"
 	"math/big"
+	"os"
 	"testing"
 )
 
@@ -53,6 +56,38 @@ func compareByTolerance(t *testing.T, f1, f2 float64, absolute float64, relative
 	tolerance := absolute + relative*math.Abs(f2)
 
 	return math.Abs(f1-f2) <= tolerance
+}
+
+func mustReadTestCases(path string) []struct {
+	Name        string
+	Sample      []float64
+	Coefficient []float64
+} {
+	f, err := os.OpenFile(path, os.O_RDONLY, os.FileMode(0440))
+	if err != nil {
+		os.Exit(1)
+	}
+	defer f.Close()
+
+	b, err := io.ReadAll(f)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	var testCases []struct {
+		Name        string    `json:"name"`
+		Sample      []float64 `json:"sample"`
+		Coefficient []float64 `json:"coefficient"`
+	}
+	if err := json.Unmarshal(b, &testCases); err != nil {
+		os.Exit(1)
+	}
+
+	return []struct {
+		Name        string
+		Sample      []float64
+		Coefficient []float64
+	}(testCases)
 }
 
 // Compare with the output of `scipy.fft.dct`
@@ -340,6 +375,31 @@ func TestDCT32ByFFTW(t *testing.T) {
 					t.Errorf(
 						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 						i, tc.got[i], tc.want[i],
+					)
+				}
+			}
+		})
+	}
+}
+
+func TestDCTIV1152(t *testing.T) {
+	testCases := mustReadTestCases("./test_data/dct_iv_test.json")
+	for _, tc := range testCases {
+		got := DCTIV1152(tc.Sample)
+		want := tc.Coefficient
+
+		t.Run(tc.Name, func(t *testing.T) {
+			for i := range got {
+				if !compareBySignficantDigits(t, got[i], want[i], 6) {
+					t.Logf(
+						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, got[i], want[i],
+					)
+				}
+				if !compareByTolerance(t, got[i], want[i], 1e-10, 1e-08) {
+					t.Errorf(
+						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, got[i], want[i],
 					)
 				}
 			}
