@@ -382,10 +382,10 @@ func TestDCT32ByFFTW(t *testing.T) {
 	}
 }
 
-func TestDCTIV1152(t *testing.T) {
+func TestDCTIV576(t *testing.T) {
 	testCases := mustReadTestCases("./test_data/dct_iv_test.json")
 	for _, tc := range testCases {
-		got := DCTIV1152(tc.Sample)
+		got := DCTIV576(tc.Sample)
 		want := tc.Coefficient
 
 		t.Run(tc.Name, func(t *testing.T) {
