@@ -84,3 +84,26 @@ func DCTIV576(samples []float64) []float64 {
 
 	return bins
 }
+
+func ZeroPad36(samples []float64) []float64 {
+	zeros := make([]float64, 36)
+
+	return append(samples, zeros...)
+}
+
+func HalfShift72(samples []float64) []float64 {
+	shiftedSamples := make([]float64, 72)
+	copy(shiftedSamples[0:18], samples[54:72])
+	copy(shiftedSamples[54:72], samples[0:54])
+
+	return shiftedSamples
+}
+
+func Overlap72(samples []float64) []float64 {
+	overlappedSamples := make([]float64, 18)
+	for i := 0; i < 18; i++ {
+		overlappedSamples[i] = samples[0] - samples[35-i] - samples[36+i] + samples[71-i]
+	}
+
+	return overlappedSamples
+}
