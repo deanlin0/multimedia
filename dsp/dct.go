@@ -68,13 +68,13 @@ func DCT32ByFFTW(samples []float64) []float64 {
 	return output
 }
 
-func DCTIV576(samples []float64) []float64 {
-	bins := make([]float64, 576)
-	for k := 0; k < 576; k++ {
+func DCTIV18(samples []float64) []float64 {
+	bins := make([]float64, 18)
+	for k := 0; k < 18; k++ {
 		var bin float64
-		for n := 0; n < 576; n++ {
+		for n := 0; n < 18; n++ {
 			sample := samples[n]
-			phase := math.Pi * (float64(2*k) + 1) * (float64(2*n) + 1) / 2304
+			phase := math.Pi * (float64(2*k) + 1) * (float64(2*n) + 1) / 72
 			filter := math.Cos(phase)
 			bin += sample * filter
 		}

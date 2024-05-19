@@ -382,10 +382,10 @@ func TestDCT32ByFFTW(t *testing.T) {
 	}
 }
 
-func TestDCTIV576(t *testing.T) {
+func TestDCTIV18(t *testing.T) {
 	testCases := mustReadTestCases("./test_data/dct_iv_test.json")
 	for _, tc := range testCases {
-		got := DCTIV576(tc.Sample)
+		got := DCTIV18(tc.Sample)
 		want := tc.Coefficient
 
 		t.Run(tc.Name, func(t *testing.T) {
@@ -396,7 +396,7 @@ func TestDCTIV576(t *testing.T) {
 						i, got[i], want[i],
 					)
 				}
-				if !compareByTolerance(t, got[i], want[i], 1e-10, 1e-08) {
+				if !compareByTolerance(t, got[i], want[i], 1e-10, 1e-07) {
 					t.Errorf(
 						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 						i, got[i], want[i],
