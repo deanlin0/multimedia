@@ -99,11 +99,11 @@ func HalfShift72(samples []float64) []float64 {
 	return shiftedSamples
 }
 
-func Overlap72(samples []float64) []float64 {
-	overlappedSamples := make([]float64, 18)
+func Butterfly72(samples []float64) []float64 {
+	butterflySamples := make([]float64, 18)
 	for i := 0; i < 18; i++ {
-		overlappedSamples[i] = samples[0] - samples[35-i] - samples[36+i] + samples[71-i]
+		butterflySamples[i] = samples[0] - samples[35-i] - samples[36+i] + samples[71-i]
 	}
 
-	return overlappedSamples
+	return butterflySamples
 }
