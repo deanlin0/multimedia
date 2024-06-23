@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func compareBySignficantDigits(t *testing.T, f1, f2 float64, signficance int) bool {
+func compareBySignificantDigits(t *testing.T, f1, f2 float64, signficance int) bool {
 	t.Helper()
 
 	F1 := big.NewFloat(f1)
@@ -171,7 +171,7 @@ func TestDCT32(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			for i := range tc.got {
-				if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
+				if !compareBySignificantDigits(t, tc.got[i], tc.want[i], 6) {
 					t.Logf(
 						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 						i, tc.got[i], tc.want[i],
@@ -268,7 +268,7 @@ func TestDCT32ByDFT(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			for i := range tc.got {
-				if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
+				if !compareBySignificantDigits(t, tc.got[i], tc.want[i], 6) {
 					t.Logf(
 						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 						i, tc.got[i], tc.want[i],
@@ -365,7 +365,7 @@ func TestDCT32ByFFTW(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			for i := range tc.got {
-				if !compareBySignficantDigits(t, tc.got[i], tc.want[i], 6) {
+				if !compareBySignificantDigits(t, tc.got[i], tc.want[i], 6) {
 					t.Logf(
 						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 						i, tc.got[i], tc.want[i],
@@ -390,7 +390,7 @@ func TestDCTIV18(t *testing.T) {
 
 		t.Run(tc.Name, func(t *testing.T) {
 			for i := range got {
-				if !compareBySignficantDigits(t, got[i], want[i], 6) {
+				if !compareBySignificantDigits(t, got[i], want[i], 6) {
 					t.Logf(
 						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
 						i, got[i], want[i],
