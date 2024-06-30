@@ -3,6 +3,7 @@ package dsp
 import (
 	"math"
 	"multimedia/fftw"
+	"multimedia/lame"
 )
 
 // 32-point DCT
@@ -85,25 +86,55 @@ func DCTIV18(samples []float64) []float64 {
 	return bins
 }
 
-func ZeroPad36(samples []float64) []float64 {
+func ZeroPadMatrix36(samples []float64) []float64 {
 	zeros := make([]float64, 36)
 
 	return append(samples, zeros...)
 }
 
-func HalfShift72(samples []float64) []float64 {
+func ShiftMatrix72(samples []float64) []float64 {
 	shiftedSamples := make([]float64, 72)
-	copy(shiftedSamples[0:18], samples[54:72])
-	copy(shiftedSamples[54:72], samples[0:54])
+	copy(shiftedSamples[0:9], samples[63:72])
+	copy(shiftedSamples[9:72], samples[0:63])
 
 	return shiftedSamples
 }
 
-func Butterfly72(samples []float64) []float64 {
-	butterflySamples := make([]float64, 18)
+func RepeatMatrix72(samples []float64) []float64 {
+	repeatedSamples := make([]float64, 18)
 	for i := 0; i < 18; i++ {
-		butterflySamples[i] = samples[0] - samples[35-i] - samples[36+i] + samples[71-i]
+		repeatedSamples[i] = samples[0] - samples[35-i] - samples[36+i] + samples[71-i]
 	}
 
-	return butterflySamples
+	return repeatedSamples
+}
+
+func MDCTLong(samples []float64) []float64 {
+	mdctSamples := make([]float64, 36)
+	copy(mdctSamples, samples)
+	mdctSamples = ZeroPadMatrix36(mdctSamples)
+	mdctSamples = ShiftMatrix72(mdctSamples)
+	mdctSamples = RepeatMatrix72(mdctSamples)
+	mdctSamples = DCTIV18(mdctSamples)
+
+	return mdctSamples
+}
+
+func MDCTLongByLAME(samples []float64) []float64 {
+	input32 := make([]float32, 36)
+	for i := range samples {
+		input32[i] = float32(samples[i])
+	}
+	output32 := make([]float32, 18)
+
+	in := lame.NewArray(input32)
+	out := lame.NewArray(output32)
+	lame.MDCTLong(in, out)
+
+	output64 := make([]float64, 18)
+	for i := range output32 {
+		output64[i] = float64(output32[i])
+	}
+
+	return output64
 }

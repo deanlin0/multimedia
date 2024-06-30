@@ -406,3 +406,28 @@ func TestDCTIV18(t *testing.T) {
 		})
 	}
 }
+
+func TestMDCTLong(t *testing.T) {
+	testCases := mustReadTestCases("./test_data/mdct_long_test.json")
+	for _, tc := range testCases {
+		got := MDCTLong(tc.Sample)
+		want := MDCTLongByLAME(tc.Sample)
+
+		t.Run(tc.Name, func(t *testing.T) {
+			for i := range got {
+				if !compareBySignificantDigits(t, got[i], want[i], 6) {
+					t.Logf(
+						"Bin has different significant digits.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, got[i], want[i],
+					)
+				}
+				if !compareByTolerance(t, got[i], want[i], 1e-10, 1e-07) {
+					t.Errorf(
+						"Bin is incorrect.\ngot[%[1]d]:\n%.50[2]f,\nwant[%[1]d]:\n%.50[3]f\n",
+						i, got[i], want[i],
+					)
+				}
+			}
+		})
+	}
+}
