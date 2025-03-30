@@ -1,4 +1,4 @@
-package hls
+package id3
 
 import (
 	"encoding/binary"
